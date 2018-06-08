@@ -1,28 +1,36 @@
-// Add event listeners
-['name', 'zip', 'email', 'phone'].forEach(field => {
-  document.getElementById(field).addEventListener('blur', validateField);
-});
+// InputFields and regex
+fields = [
+  {
+    id: 'name',
+    re: /^[a-zA-Z]{2,10}$/
+  },
+  {
+    id: 'zip',
+    re: /^[0-9]{5}(-[0-9]{4})?$/
+  },
+  {
+    id: 'email',
+    re: /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/
+  },
+  {
+    id: 'phone',
+    re: /^\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}$/
+  }
+];
 
-// All regex fields
-const re_name = /^[a-zA-Z]{2,10}$/;
-const re_zip = /^[0-9]{5}(-[0-9]{4})?$/;
-const re_email = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
-const re_phone = /^\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}$/;
+// Add event listeners
+fields.forEach(field => {
+  document.getElementById(field.id).addEventListener('blur', validateField);
+  document.getElementById(field.id).addEventListener('keyup', validateField);
+});
 
 // Validate Field
 function validateField(e) {
+  console.log(e.target.id);
   // Get field regex based on target.id
-  const re = eval(`re_${e.target.id}`);
-  // Test regex with input value
-  if(!re.test(e.target.value)){
-    e.target.classList.add('is-invalid');
-    // Add keyup event if invalid input
-    document.getElementById(e.target.id).addEventListener('keyup', validateField);
-  } else {
+  const re = fields.find(field => field.id === e.target.id).re;
+  // Test regex with input value, change class if valid/invalid
+  !re.test(e.target.value) ?
+    e.target.classList.add('is-invalid') :
     e.target.classList.remove('is-invalid');
-    // Remove keyup event for valid input
-    document.getElementById(e.target.id).removeEventListener('keyup', validateField);
-  }
 };
-
-
