@@ -1,7 +1,7 @@
 // Item Controller
 const ItemCtrl = ((id, name, calories) => {
   // Item Constructor
-  const Item = function(id, name ,calories) {
+  const Item = function (id, name ,calories) {
     this.id = id;
     this.name = name;
     this.calories = calories;
@@ -10,9 +10,9 @@ const ItemCtrl = ((id, name, calories) => {
   // Data Structure / State
   const data = {
     items: [
-      { id: 0, name: 'Steak Dinner', calories: 1200},
-      { id: 1, name: 'Cookie', calories: 400},
-      { id: 2, name: 'Eggs', calories: 300}
+      // { id: 0, name: 'Steak Dinner', calories: 1200},
+      // { id: 1, name: 'Cookie', calories: 400},
+      // { id: 2, name: 'Eggs', calories: 300}
     ],
     currentItem: null,
     totalCalories: 0
@@ -71,6 +71,26 @@ const UICtrl = (() => {
       });
       document.querySelector(UISelectors.itemList).innerHTML = html;
     },
+    addListItem: (item) => {
+      // show ul list to ui
+      document.querySelector(UISelectors.itemList).style.display = 'block';
+      // Create li element
+      const li = document.createElement('li');
+      li.className = 'collection-item';
+      li.id = `item-${item.id}`
+      li.innerHTML = `<strong>${item.name}: </strong> <em>${item.calories} Calories</em>
+                  <a href="#" class="secondary-content"><i class="edit-item fa fa-pencil-alt"></i></a>
+`;
+      // Insert item
+      document.querySelector(UISelectors.itemList).insertAdjacentElement('beforeend', li);
+    },
+    hideList: () => {
+      document.querySelector(UISelectors.itemList).style.display = 'none';
+    },
+    clearInput: () => {
+      document.querySelector(UISelectors.itemNameInput).value = '';
+      document.querySelector(UISelectors.itemCaloriesInput).value = '';
+    },
     getSelectors: () => {
       return UISelectors;
     },
@@ -105,6 +125,10 @@ const App = ((ItemCtrl, UICtrl, StorageCtrl) => {
     if(input.name !== '' && input.calories !== '') {
       // Add item
       const newItem = ItemCtrl.addItem(input.name, input.calories);
+      // Add item to ui list
+      UICtrl.addListItem(newItem);
+      // Clear input
+      UICtrl.clearInput();
     } 
     e.preventDefault();
   }
@@ -114,9 +138,14 @@ const App = ((ItemCtrl, UICtrl, StorageCtrl) => {
       // Fetch items from data structure
       const items = ItemCtrl.getItems();
 
-      // Populate list with items
-      UICtrl.populateItemLists(items);
-
+      // Check if any items
+      if(items.length === 0) {
+        // Hide ul from ui
+        UICtrl.hideList();
+      } else {
+        // Populate list with items
+        UICtrl.populateItemLists(items);
+      }
       // Load event listeners
       loadEventListeners();
     }
