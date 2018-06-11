@@ -299,7 +299,7 @@ const App = ((ItemCtrl, UICtrl, StorageCtrl) => {
     ItemCtrl.deleteItem(currentItem.id);
     // Delete from UI
     UICtrl.deleteListItem(currentItem.id);
-
+    // Prevent default behavior
     e.preventDefault();
   };
 
@@ -307,7 +307,7 @@ const App = ((ItemCtrl, UICtrl, StorageCtrl) => {
   const deleteAllItems = (e) => {
     ItemCtrl.deleteAll();
     UICtrl.deleteAllItems();
-
+    // Prevent default behavior
     e.preventDefault();
   };
   // Disable enter event
@@ -335,8 +335,6 @@ const App = ((ItemCtrl, UICtrl, StorageCtrl) => {
         // Populate list with items
         UICtrl.populateItemLists(items);
       }
-      // Update total calories
-      UICtrl.showTotalCalories();
       // Load event listeners
       loadEventListeners();
     }
