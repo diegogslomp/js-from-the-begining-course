@@ -69,6 +69,19 @@ const ItemCtrl = ((id, name, calories) => {
       return found;
     },
 
+    deleteItem: (id) => {
+      // Get all ids
+      const ids = data.items.map((item) => { return item.id });
+      // Get item index
+      const index = ids.indexOf(id);
+      // Remove item
+      data.items.splice(index, 1);
+    },
+
+    deleteAll: () => {
+      data.items = [];
+    },
+
     getTotalCalories: () => {
       let total = 0;
       data.items.forEach(item => {
@@ -101,6 +114,7 @@ const UICtrl = (() => {
     itemNameInput: '#item-name',
     itemCaloriesInput: '#item-calories',
     addBtn: '.add-btn',
+    clearBtn: '.clear-btn',
     updateBtn: '.update-btn',
     deleteBtn: '.delete-btn',
     backBtn: '.back-btn',
@@ -108,19 +122,14 @@ const UICtrl = (() => {
   }
   // Public methods
   return {
-    populateItemLists: (items) => {
-      html = '';
-      items.forEach(item => {
-        html += `<li class="collection-item" id="item-${item.id}">
-                  <strong>${item.name}: </strong> <em>${item.calories} Calories</em>
-                  <a href="#" class="secondary-content"><i class="edit-item fa fa-pencil-alt"></i></a>
-                 </li>`
-      });
-      document.querySelector(UISelectors.itemList).innerHTML = html;
-    },
+   populateItemLists: (items) => {
+      items.forEach((item) => {
+        UICtrl.addListItem(item);
+    })
+  },
+
     addListItem: (item) => {
-      // show ul list to ui
-      document.querySelector(UISelectors.itemList).style.display = 'block';
+      UICtrl.showList();
       // Create li element
       const li = document.createElement('li');
       li.className = 'collection-item';
@@ -134,21 +143,34 @@ const UICtrl = (() => {
       UICtrl.showTotalCalories();
       UICtrl.clearInput();
     },
+
     updateListItem: (item) => {
-      let listItems = document.querySelectorAll(UISelectors.listItems);
-      // Turn nodelist into array
-      listItems = Array.from(listItems);
-      listItems.forEach((listItem) => {
-        const itemId = listItem.getAttribute('id');
-        if(itemId === `item-${item.id}`){
-          document.getElementById(itemId).innerHTML = `<strong>${item.name}: </strong> <em>${item.calories} Calories</em>
-                                    <a href="#" class="secondary-content"><i class="edit-item fa fa-pencil-alt"></i></a>`;
-          UICtrl.clearEditState();
-          // Add total calories to UI
-          UICtrl.showTotalCalories();
-        }
-      });
+      const itemID  = `item-${item.id}`
+      const itemToUpdate = document.getElementById(itemID);
+      itemToUpdate.innerHTML = `<strong>${item.name}: </strong> <em>${item.calories} Calories</em>
+              <a href="#" class="secondary-content"><i class="edit-item fa fa-pencil-alt"></i></a>`;
+      UICtrl.clearEditState();
+      // Add total calories to UI
+      UICtrl.showTotalCalories();
     },
+
+    deleteListItem: (id) => {
+      const itemID = `item-${id}`
+      document.getElementById(itemID).remove();
+      UICtrl.clearEditState();
+      // Add total calories to UI
+      UICtrl.showTotalCalories();
+    },
+
+    deleteAllItems: () => {
+      listItems = Array.from(document.querySelectorAll(UISelectors.listItems));
+      listItems.forEach((item) => {
+        item.remove();
+      });
+      UICtrl.hideList();
+      UICtrl.showTotalCalories();
+    },
+
     showTotalCalories:() => {
       document.querySelector(UISelectors.totalCalories).textContent = ItemCtrl.getTotalCalories();
     },
@@ -162,6 +184,9 @@ const UICtrl = (() => {
     hideList: () => {
       document.querySelector(UISelectors.itemList).style.display = 'none';
     },
+    showList: () => {
+      document.querySelector(UISelectors.itemList).style.display = 'block';
+    },
     clearInput: () => {
       document.querySelector(UISelectors.itemNameInput).value = '';
       document.querySelector(UISelectors.itemCaloriesInput).value = '';
@@ -172,6 +197,11 @@ const UICtrl = (() => {
       document.querySelector(UISelectors.deleteBtn).style.display = 'none';
       document.querySelector(UISelectors.backBtn).style.display = 'none';
       document.querySelector(UISelectors.addBtn).style.display = 'inline';
+      const itemListCount = document.querySelectorAll(UISelectors.listItems).length;
+      // Hide ul if list empty
+      if(itemListCount === 0) {
+        UICtrl.hideList();
+      }
     },
     showEditState: () => {
       document.querySelector(UISelectors.updateBtn).style.display = 'inline';
@@ -209,7 +239,14 @@ const App = ((ItemCtrl, UICtrl, StorageCtrl) => {
     document.querySelector(UISelectors.itemList).addEventListener('click', itemEditClick);
     // Update item event
     document.querySelector(UISelectors.updateBtn).addEventListener('click', itemUpdateSubmit);
+    // Delete item event
+    document.querySelector(UISelectors.deleteBtn).addEventListener('click', itemDeleteSubmit);
+    // Delete all items event
+    document.querySelector(UISelectors.clearBtn).addEventListener('click', deleteAllItems);
+    // Back button event
+    document.querySelector(UISelectors.backBtn).addEventListener('click', itemBackSubmit);
   }
+
   // Add event submit
   const itemAddSubmit = (e) => {
     // Get form input from UI Controller
@@ -255,6 +292,24 @@ const App = ((ItemCtrl, UICtrl, StorageCtrl) => {
     e.preventDefault();
   }
 
+  // Delete item event
+  const itemDeleteSubmit = (e) => {
+    // Delete from data structure
+    const currentItem = ItemCtrl.getCurrentItem();
+    ItemCtrl.deleteItem(currentItem.id);
+    // Delete from UI
+    UICtrl.deleteListItem(currentItem.id);
+
+    e.preventDefault();
+  };
+
+  // Delete all items event
+  const deleteAllItems = (e) => {
+    ItemCtrl.deleteAll();
+    UICtrl.deleteAllItems();
+
+    e.preventDefault();
+  };
   // Disable enter event
   const disableEnter = (e) => { 
       // If 'enter' was hitted
@@ -263,6 +318,12 @@ const App = ((ItemCtrl, UICtrl, StorageCtrl) => {
       }
     }
 
+  // Back button event
+  const itemBackSubmit = (e) => {
+    UICtrl.clearEditState();
+    e.preventDefault();
+  };
+
   // Public methods
   return {
     init: () => {
@@ -270,11 +331,7 @@ const App = ((ItemCtrl, UICtrl, StorageCtrl) => {
       UICtrl.clearEditState();
       // Fetch items from data structure
       const items = ItemCtrl.getItems();
-      // Check if any items
-      if(items.length === 0) {
-        // Hide ul from ui
-        UICtrl.hideList();
-      } else {
+      if(items.length !== 0) {
         // Populate list with items
         UICtrl.populateItemLists(items);
       }
