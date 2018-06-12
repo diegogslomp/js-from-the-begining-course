@@ -55,11 +55,6 @@ const ItemCtrl = ((id, name, calories) => {
 
   // Data Structure / State
   const data = {
-    // items: [
-    //   { id: 0, name: 'Steak Dinner', calories: 500},
-    //   { id: 1, name: 'Cookie', calories: 500},
-    //   { id: 2, name: 'Eggs', calories: 500}
-    // ],
     items: StorageCtrl.getItemsFromStorage(),
     currentItem: null,
     totalCalories: 0
